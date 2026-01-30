@@ -77,8 +77,3 @@ Then open your browser to: **http://127.0.0.1:5000**
 ✅ Smooth web interface with live updates  
 ✅ Auto-close on successful verification  
 
-### Author
-Team20_Byteme
-
-### License
-MIT License
