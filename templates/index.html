@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Verification - Blink Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .video-container {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #video-feed {
+            width: 100%;
+            display: block;
+            border-radius: 15px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .stat-value.blink-count {
+            color: #60a5fa;
+        }
+
+        .stat-value.face-status {
+            font-size: 1.2rem;
+        }
+
+        .stat-value.face-status.verified {
+            color: #34d399;
+        }
+
+        .stat-value.face-status.not-verified {
+            color: #f87171;
+        }
+
+        .stat-value.face-status.registering {
+            color: #fbbf24;
+        }
+
+        .verification-status {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.pending {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a1a2e;
+        }
+
+        .status-badge.passed {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            color: #fff;
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.failed {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            color: #fff;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .instructions {
+            margin-top: 20px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .instructions ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .instructions li {
+            padding: 5px 0;
+        }
+
+        .instructions li::before {
+            content: "✓ ";
+            color: #60a5fa;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #60a5fa, #34d399);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Congratulations Overlay */
+        .congrats-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .congrats-content {
+            text-align: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .congrats-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .congrats-title {
+            font-size: 3rem;
+            color: #34d399;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .congrats-message {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+
+        .congrats-submessage {
+            font-size: 1rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Congratulations Overlay -->
+    <div class="congrats-overlay" id="congrats-overlay">
+        <div class="congrats-content">
+            <div class="congrats-icon">🎉</div>
+            <h1 class="congrats-title">Congratulations!</h1>
+            <p class="congrats-message">You are verified as a real human!</p>
+            <p class="congrats-submessage">Closing in a moment...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>🔐 Human Verification</h1>
+        <p class="subtitle">Complete face verification and blink 3 times to prove you're human</p>
+
+        <div class="video-container">
+            <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Video Feed">
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Blink Count</div>
+                <div class="stat-value blink-count" id="blink-count">0</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="blink-progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Face Status</div>
+                <div class="stat-value face-status not-verified" id="face-status">Detecting...</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Required Blinks</div>
+                <div class="stat-value" style="color: #34d399;">3</div>
+            </div>
+        </div>
+
+        <div class="verification-status">
+            <div class="status-badge pending" id="verification-badge">VERIFICATION IN PROGRESS</div>
+            
+            <div class="instructions">
+                <p>Instructions:</p>
+                <ul>
+                    <li>Position your face clearly in the camera</li>
+                    <li>Wait for face registration (first few seconds)</li>
+                    <li>Blink naturally 3 times</li>
+                    <li>Keep the same face throughout the process</li>
+                </ul>
+            </div>
+
+            <div class="btn-container">
+                <button class="btn btn-primary" onclick="resetVerification()">🔄 Reset</button>
+                <button class="btn btn-secondary" onclick="location.reload()">↻ Refresh</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateStats() {
+            fetch('/get_stats')
+                .then(response => response.json())
+                .then(data => {
+                    // Update blink count
+                    document.getElementById('blink-count').textContent = data.blink_count;
+                    
+                    // Update blink progress bar
+                    const progress = Math.min((data.blink_count / 3) * 100, 100);
+                    document.getElementById('blink-progress').style.width = progress + '%';
+
+                    // Auto-close when verification passed
+                    if (data.verification_passed) {
+                        setTimeout(() => {
+                            fetch('/shutdown');
+                        }, 2000);  // Close after 2 seconds
+                    }
+
+                    // Update face status
+                    const faceStatus = document.getElementById('face-status');
+                    faceStatus.className = 'stat-value face-status';
+                    
+                    if (data.face_status === 'verified') {
+                        faceStatus.textContent = '✓ Verified';
+                        faceStatus.classList.add('verified');
+                    } else if (data.face_status === 'registering') {
+                        faceStatus.textContent = '📝 Registering...';
+                        faceStatus.classList.add('registering');
+                    } else if (data.face_status === 'detected') {
+                        faceStatus.textContent = '👤 Detected';
+                        faceStatus.classList.add('registering');
+                    } else if (data.face_status === 'mismatch') {
+                        faceStatus.textContent = '⚠ Face Changed!';
+                        faceStatus.classList.add('not-verified');
+                    } else {
+                        faceStatus.textContent = '❌ No Face';
+                        faceStatus.classList.add('not-verified');
+                    }
+
+                    // Update verification badge
+                    const badge = document.getElementById('verification-badge');
+                    badge.className = 'status-badge';
+                    
+                    if (data.verification_passed) {
+                        badge.textContent = '✓ HUMAN VERIFIED';
+                        badge.classList.add('passed');
+                        // Show congratulations overlay
+                        document.getElementById('congrats-overlay').style.display = 'flex';
+                    } else if (data.face_status === 'mismatch') {
+                        badge.textContent = '✗ VERIFICATION FAILED';
+                        badge.classList.add('failed');
+                    } else {
+                        badge.textContent = 'VERIFICATION IN PROGRESS';
+                        badge.classList.add('pending');
+                    }
+                })
+                .catch(error => console.error('Error fetching stats:', error));
+        }
+
+        function resetVerification() {
+            fetch('/reset')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Reset successful');
+                    updateStats();
+                })
+                .catch(error => console.error('Error resetting:', error));
+        }
+
+        // Update stats every 200ms
+        setInterval(updateStats, 200);
+        updateStats();
+    </script>
+</body>
+</html>
