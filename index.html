@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart_Identification_Verification</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loginPage">
+        <div class="login-card premium-login-container">
+            <div class="premium-brand">
+                <h2 class="brand-title premium-title">BIO-SENTINEL</h2>
+                <p class="brand-subtitle premium-subtitle">GUARD ACCESS NODE</p>
+                <span class="premium-tag">Enterprise Security Interface</span>
+            </div>
+
+            <div class="premium-system-status">
+                <div>System Status: <span class="status-dot">● Secure</span></div>
+                <div>AI Engine: Active</div>
+            </div>
+
+            <form id="loginForm" class="premium-login-form">
+                <div class="premium-input-group">
+                    <input type="text" id="guardId" class="premium-input" placeholder="Guard ID" value="SEC-01" required>
+                    <label>Guard ID / Employee ID</label>
+                </div>
+
+                <div class="premium-input-group">
+                    <input type="password" id="guardPassword" class="premium-input" placeholder="Password" value="****" required>
+                    <label>Password</label>
+                    <span class="premium-toggle" onclick="premiumTogglePassword()">👁</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary login-btn">VERIFY IDENTITY</button>
+                <div class="premium-error" id="premiumLoginMsg"></div>
+            </form>
+
+            <div class="premium-footer-note">
+                Advanced Biometric & Credential Intelligence
+                <span>Behavior • Credential • Biometric Authentication</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardHome" class="hidden">
+        <header>
+            <div class="logo">BIO-SENTINEL // HOME</div>
+            <div class="header-info">GATE: NORTH-1 | GUARD: RAJESH</div>
+        </header>
+
+        <div class="menu-grid">
+            <div class="menu-card" onclick="navTo('databasePage')">
+                <div class="card-icon">📂</div>
+                <div class="card-title">VIEW REGISTRY<br>DATABASE</div>
+                <div class="card-desc">Browse Residents & Access History</div>
+            </div>
+
+            <div class="menu-card" onclick="openScanner()">
+                <div class="card-icon">📷</div>
+                <div class="card-title">VERIFY<br>IDENTITY</div>
+                <div class="card-desc">Scan Face & Check Liveness</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="databasePage" class="hidden">
+        <div class="db-header">
+            <h2 style="margin:0;">Registered Users</h2>
+            <button class="btn btn-outline" onclick="navTo('dashboardHome')">← BACK TO HOME</button>
+        </div>
+
+        <div class="table-container">
+            <table class="registry-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Last Access</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="scannerModal" class="hidden">
+        <button class="btn btn-outline close-scanner-btn" onclick="closeScanner()">✖ CLOSE SCANNER</button>
+        
+        <div class="camera-frame">
+            <video id="webcam" autoplay playsinline muted></video>
+            <div id="scanOverlay" class="scan-overlay scanning"></div>
+        </div>
+
+        <div id="scanResult">ALIGN FACE...</div>
+    </div>
+
+    <div id="userModal" class="hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modalUserName">User Name</h2>
+                <button class="btn btn-outline" onclick="closeUserModal()">CLOSE</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-label">USER ID</div>
+                        <div class="stat-value" id="modalUserId">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">TOTAL ENTRIES</div>
+                        <div class="stat-value text-green" id="modalEntryCount">0</div>
+                    </div>
+                </div>
+
+                <h3 class="history-title">Access History Logs</h3>
+                <div class="history-list" id="modalHistoryList">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
